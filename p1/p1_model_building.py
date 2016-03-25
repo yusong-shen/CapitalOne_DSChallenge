@@ -12,6 +12,9 @@ from sklearn.cross_validation import train_test_split
 import random
 from sklearn.linear_model import Ridge
 from pandas.stats.api import ols
+from sklearn.metrics import mean_squared_error
+from sklearn import linear_model
+from sklearn.linear_model import Lasso
 
 # reading data
 train = pd.read_table("codetest_train.txt")
@@ -73,18 +76,50 @@ x_train_all, x_test, y_train_all, y_test = train_test_split(
     
     
     
-
+###############################################################################
+# TODO : perform cross validation to select model
+    
 # fit ordinary linear regression    
-res = ols(y = y_train_all, x = x_train_all)    
-res
+# pandas version
+ols_mod = ols(y = y_train_all, x = x_train_all)    
+
+# sklearn version
+ols_mod2 = linear_model.LinearRegression()
+ols_mod2.fit(x_train_all, y_train_all)        
+
+# training mse
+y_ols_train = ols_mod2.predict(x_train_all)
+mean_squared_error(y_train_all, y_ols_train)
+
+# test mse
+y_ols_pred = ols_mod2.predict(x_test)
+mean_squared_error(y_test, y_ols_pred)
 
         
-# fit regression model to data
+## fit regression model to data
+# ridge regression
 ridge = Ridge(alpha = 1.0)
 ridge.fit(x_train_all, y_train_all)
 
-ridge.score(x_test, y_test)
+# training mse
+y_ridge_train = ridge.predict(x_train_all)
+mean_squared_error(y_train_all, y_ridge_train)
 
+# test mse
+y_ridge_pred = ridge.predict(x_test)
+mean_squared_error(y_test, y_ridge_pred)
+
+# lasso regression
+lasso = Lasso(alpha = 1.0)
+lasso.fit(x_train_all, y_train_all)
+
+# training mse
+y_lasso_train = lasso.predict(x_train_all)
+mean_squared_error(y_train_all, y_lasso_train)
+
+# test mse
+y_lasso_pred = lasso.predict(x_test)
+mean_squared_error(y_test, y_lasso_pred)
 
 
 
