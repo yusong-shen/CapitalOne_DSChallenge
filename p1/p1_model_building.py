@@ -29,9 +29,14 @@ plt.hist(train_num["target"])
 train_num.describe()
 test_num.describe()
 
-# convert the categorical variable to number
+# categorival variable
 train_cat = train.select_dtypes(exclude=[np.float])
 test_cat = test.select_dtypes(exclude=[np.float])
+for col in train_cat :
+    train_cat[col] = train_cat[col].astype('category')
+for col in test_cat :
+    test_cat[col] = train_cat[col].astype('category')
+
 
 train_cat.describe()
 test_cat.describe()
@@ -45,6 +50,16 @@ test_num = test_num.fillna(test_num.mean())
 train_cat = train_cat.apply( lambda x : x.fillna(random.choice(x.value_counts().index)) ) 
 test_cat = test_cat.apply( lambda x : x.fillna(random.choice(x.value_counts().index)) ) 
 
+train_cat.describe()
+test_cat.describe()
+
+# convert the categorical variable to number
+
+train_cat[train_cat.columns] = \
+ train_cat[train_cat.columns].apply(lambda x: x.cat.codes)
+
+test_cat[test_cat.columns] = \
+ test_cat[test_cat.columns].apply(lambda x: x.cat.codes)
 
 # split the training data to training set and validation set
 y = train["target"]
@@ -63,15 +78,13 @@ x_train_all, x_test, y_train_all, y_test = train_test_split(
 res = ols(y = y_train_all, x = x_train_all)    
 res
 
-# use only numerical data
-x_train_all, x_test, y_train_all, y_test = train_test_split(
-    x_train_num, y, test_size = 0.2, random_state = 42)
         
 # fit regression model to data
 ridge = Ridge(alpha = 1.0)
 ridge.fit(x_train_all, y_train_all)
 
 ridge.score(x_test, y_test)
+
 
 
 
