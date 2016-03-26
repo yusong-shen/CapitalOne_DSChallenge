@@ -59,9 +59,28 @@ CREATE VIEW names_since_1980 AS
   FROM namesByState
   WHERE year >= 1980;
 
-SELECT count(DISTINCT name)
-FROM namesByState
-WHERE year = 2014;
+CREATE VIEW names_before_1980 AS
+  SELECT *
+  FROM namesByState
+  WHERE  year < 1980;
+
+-- DROP VIEW names_before_1980
+
+-- CREATE VIEW names_before_1980 AS
+-- SELECT name, year, sum(occurence) AS sum
+-- FROM namesByState
+-- GROUP BY name, year
+-- HAVING year <= 1980
+-- ORDER BY sum(occurence) DESC ;
+
+
+
+SELECT name, sum(occurence) AS
+FROM names_since_1980
+GROUP BY name
+ORDER BY sum(occurence) DESC ;
+
+
 
 
 -- 5.  Can you identify names that may have had an even larger increase or decrease

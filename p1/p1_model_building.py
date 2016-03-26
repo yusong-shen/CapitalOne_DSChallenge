@@ -138,7 +138,7 @@ elastic_test_mse = mean_squared_error(y_test, y_lasso_pred)
 
 #### perform cross validation to select model
 ## ridge regression with CV
-ridgeCV = RidgeCV(alphas = [0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0])
+ridgeCV = RidgeCV(alphas = [0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0])
 ridgeCV.fit(x_train_all, y_train_all)
 
 ridgeCV.alpha_
@@ -172,8 +172,8 @@ plt.show()
 ###############################################################################
 # output the result
 
-ridgeCV_final_pred = ridgeCV.predict(x_final_test)
-df_ridgeCV_final_pred = pd.DataFrame(ridgeCV_final_pred)
-df_ridgeCV_final_pred.columns = [ "target"]
+ridge_final_pred = ridge.predict(x_final_test)
+df_ridge_final_pred = pd.DataFrame(ridge_final_pred)
+df_ridge_final_pred.columns = [ "target"]
 
-df_ridgeCV_final_pred.to_csv("ridgeCV_final_pred.csv")
+df_ridge_final_pred.to_csv("ridgeCV_final_pred.csv")
