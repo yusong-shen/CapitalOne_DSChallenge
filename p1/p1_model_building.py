@@ -2,7 +2,7 @@
 """
 Created on Thu Mar 24 22:31:14 2016
 
-@author: yusong
+@author: 
 """
 
 import pandas as pd
@@ -15,6 +15,9 @@ from pandas.stats.api import ols
 from sklearn.metrics import mean_squared_error
 from sklearn import linear_model
 from sklearn.linear_model import Lasso
+from sklearn.linear_model import ElasticNet
+from sklearn.linear_model import RidgeCV
+
 
 # reading data
 train = pd.read_table("codetest_train.txt")
@@ -74,12 +77,12 @@ x_train = pd.concat([x_train_num, x_train_cat], axis=1)
 x_train_all, x_test, y_train_all, y_test = train_test_split(
     x_train, y, test_size = 0.2, random_state = 42)
     
-    
+# the real test set
+x_final_test  =  pd.concat([test_num, test_cat], axis=1)
     
 ###############################################################################
-# TODO : perform cross validation to select model
-    
-# fit ordinary linear regression    
+
+### fit ordinary linear regression    
 # pandas version
 ols_mod = ols(y = y_train_all, x = x_train_all)    
 
@@ -89,37 +92,88 @@ ols_mod2.fit(x_train_all, y_train_all)
 
 # training mse
 y_ols_train = ols_mod2.predict(x_train_all)
-mean_squared_error(y_train_all, y_ols_train)
+ols_train_mse = mean_squared_error(y_train_all, y_ols_train)
 
 # test mse
 y_ols_pred = ols_mod2.predict(x_test)
-mean_squared_error(y_test, y_ols_pred)
+ols_test_mse = mean_squared_error(y_test, y_ols_pred)
 
         
-## fit regression model to data
-# ridge regression
+### fit regression model to data
+## ridge regression
 ridge = Ridge(alpha = 1.0)
 ridge.fit(x_train_all, y_train_all)
 
 # training mse
 y_ridge_train = ridge.predict(x_train_all)
-mean_squared_error(y_train_all, y_ridge_train)
+ridge_train_mse = mean_squared_error(y_train_all, y_ridge_train)
 
 # test mse
 y_ridge_pred = ridge.predict(x_test)
-mean_squared_error(y_test, y_ridge_pred)
+ridge_test_mse = mean_squared_error(y_test, y_ridge_pred)
 
-# lasso regression
+## lasso regression
 lasso = Lasso(alpha = 1.0)
 lasso.fit(x_train_all, y_train_all)
 
 # training mse
 y_lasso_train = lasso.predict(x_train_all)
-mean_squared_error(y_train_all, y_lasso_train)
+lasso_train_mse = mean_squared_error(y_train_all, y_lasso_train)
 
 # test mse
 y_lasso_pred = lasso.predict(x_test)
-mean_squared_error(y_test, y_lasso_pred)
+lasso_test_mse = mean_squared_error(y_test, y_lasso_pred)
 
+## elastic net
+elastic = ElasticNet(alpha = 1.0, l1_ratio=0.5)
+elastic.fit(x_train_all, y_train_all)
 
+# training mse
+y_elastic_train = elastic.predict(x_train_all)
+elastic_train_mse = mean_squared_error(y_train_all, y_elastic_train)
 
+# test mse
+y_elastic_pred = elastic.predict(x_test)
+elastic_test_mse = mean_squared_error(y_test, y_lasso_pred)
+
+#### perform cross validation to select model
+## ridge regression with CV
+ridgeCV = RidgeCV(alphas = [0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0])
+ridgeCV.fit(x_train_all, y_train_all)
+
+ridgeCV.alpha_
+# training mse
+y_ridgeCV_train = ridgeCV.predict(x_train_all)
+ridgeCV_train_mse = mean_squared_error(y_train_all, y_ridgeCV_train)
+
+# test mse
+y_ridgeCV_pred = ridgeCV.predict(x_test)
+ridgeCV_test_mse = mean_squared_error(y_test, y_ridgeCV_pred)
+
+plt.scatter([i for i in range(y_test.size)], y_test - y_ridgeCV_pred)
+    
+###############################################################################
+# compare result
+methods = ["ols", "lasso", "elastic net", "ridge", "ridgeCV"]
+
+train_mse = [ols_train_mse, lasso_train_mse, elastic_train_mse, 
+             ridge_train_mse, ridgeCV_train_mse]    
+test_mse = [ols_test_mse, lasso_test_mse, elastic_test_mse, 
+             ridge_test_mse, ridgeCV_test_mse] 
+             
+
+plt.figure()
+plt.plot(train_mse, label="train mse")  
+plt.plot(test_mse, label="test mse")
+plt.xticks(range(len(train_mse)), methods)
+plt.title("mean square errors")
+plt.show()           
+
+###############################################################################
+# output the result
+
+ridgeCV_final_pred = ridgeCV.predict(x_final_test)
+df_ridgeCV_final_pred = pd.DataFrame(ridgeCV_final_pred)
+df_ridgeCV_final_pred.columns = [ "target"]
+
+df_ridgeCV_final_pred.to_csv("ridgeCV_final_pred.csv")
